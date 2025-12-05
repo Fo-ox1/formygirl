@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Для тебя — Жаннелия</title>
+<style>
+  :root{
+    --bg:#07061a;
+    --card:#0f1630cc;
+    --accent:#ffd6ea;
+    --soft:#f7f7fb;
+    --glass: rgba(255,255,255,0.04);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family: Inter, "Segoe UI", Roboto, system-ui, -apple-system; 
+    background: radial-gradient(ellipse at 20% 10%, rgba(255,240,255,0.03), transparent 20%), 
+                linear-gradient(180deg,#050417 0%, #08102a 100%);
+    color:var(--soft); -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    overflow-y:auto;
+    padding-bottom:60px;
+  }
+
+  /* Stars background */
+  .sky{
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(255,255,255,0.06) 0 1px, transparent 1px),
+      radial-gradient(circle at 60% 30%, rgba(255,255,255,0.04) 0 1px, transparent 1px),
+      radial-gradient(circle at 80% 70%, rgba(255,255,255,0.03) 0 1px, transparent 1px);
+    background-size: 1200px 800px, 900px 600px, 700px 500px;
+    animation: twinkle 8s linear infinite;
+    filter: drop-shadow(0 0 8px rgba(255,255,255,0.02));
+  }
+  @keyframes twinkle{
+    0%{opacity:0.9}
+    50%{opacity:1}
+    100%{opacity:0.9}
+  }
+
+  .container{position:relative; z-index:2; max-width:980px; margin:40px auto; padding:28px;}
+  header{display:flex;align-items:center;flex-direction:column; gap:18px; margin-bottom:26px}
+  h1{font-size:28px; margin:0; color:#fff; text-shadow:0 6px 24px rgba(0,0,0,0.6)}
+  .subtitle{color:rgba(255,255,255,0.75); font-size:15px}
+
+  /* Star centerpiece */
+  .main-star-wrap{display:flex;align-items:center;justify-content:center; margin:18px 0 30px; position:relative}
+  .star{
+    width:180px; height:180px; border-radius:50%; background: radial-gradient(circle at 30% 30%, #fff 0 6%, #ffe7f0 6% 22%, #ffd6ea 22% 60%, transparent 60%);
+    display:flex;align-items:center;justify-content:center; box-shadow: 0 8px 40px rgba(255,182,210,0.12), inset 0 2px 8px rgba(255,255,255,0.12);
+    transform:scale(1); transition:transform .45s cubic-bezier(.2,.9,.2,1), box-shadow .45s;
+    cursor:pointer;
+  }
+  .star[data-active="true"]{ transform:scale(1.08); box-shadow:0 12px 80px rgba(255,182,210,0.25); animation: pulse 2s infinite; }
+  @keyframes pulse{0%{transform:scale(1.06)}50%{transform:scale(1.1)}100%{transform:scale(1.06)}}
+
+  .star-label{position:absolute; top:56%; transform:translateY(-10%); text-align:center; font-weight:600; color:#fff; text-shadow:0 6px 20px rgba(0,0,0,0.6)}
+
+  /* Constellation heart using svg overlay */
+  .constellation{position:absolute; inset:0; pointer-events:none; z-index:1; display:flex; align-items:center; justify-content:center;}
+
+  /* Intro card */
+  .intro-card{
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:16px; padding:22px; box-shadow:0 8px 30px rgba(2,6,23,0.6); backdrop-filter: blur(6px);
+    margin-bottom:22px;
+    transition:transform .5s ease, opacity .45s ease;
+  }
+  .intro-card p{margin:8px 0 0; font-size:16px; color:rgba(255,255,255,0.9)}
+
+  /* Sections grid */
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px; margin-top:10px}
+  @media(max-width:780px){.grid{grid-template-columns:1fr} .star{width:140px;height:140px}}
+
+  .card{
+    background:var(--card); border-radius:14px; padding:18px; position:relative; overflow:hidden;
+    transition: transform .35s ease, box-shadow .35s ease;
+    box-shadow:0 6px 28px rgba(5,8,20,0.6);
+  }
+  .card:hover{ transform:translateY(-6px); box-shadow:0 14px 40px rgba(5,8,20,0.75) }
+
+  .card h3{margin:0 0 10px;font-size:18px}
+  .card p{margin:0;color:rgba(255,255,255,0.85)}
+
+  /* Buttons */
+  .btn{display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px; background:linear-gradient(90deg,#ffecf6,#ffd6ea); color:#2b1020; font-weight:700; cursor:pointer; border:none; box-shadow:0 6px 20px rgba(255,174,204,0.08)}
+  .ghost{background:transparent;border:1px solid rgba(255,255,255,0.06); color:var(--soft); padding:8px 12px; border-radius:10px; cursor:pointer}
+
+  /* Letter modal */
+  .modal{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg, rgba(0,0,0,0.4), rgba(0,0,0,0.6)); backdrop-filter: blur(6px); z-index:20; padding:20px; opacity:0; pointer-events:none; transition:opacity .25s ease}
+  .modal.open{opacity:1; pointer-events:auto}
+  .letter{width:100%; max-width:680px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:14px; padding:22px; box-shadow:0 10px 40px rgba(2,6,23,0.7)}
+  .letter h2{margin:0 0 10px}
+  .letter p{white-space:pre-line; line-height:1.5; color:rgba(255,255,255,0.95)}
+
+  .close{position:absolute; right:22px; top:22px; background:transparent; color:#fff; border:0; font-size:18px; cursor:pointer}
+
+  /* Flower */
+  .flower-wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+  .flower-svg{width:140px;height:140px; transition:transform .35s ease}
+  .petal{transition:transform .6s cubic-bezier(.2,.9,.2,1), opacity .6s; transform-origin:50% 100%}
+  .flower-stage-1 .petal{transform:scale(0.7) translateY(20px); opacity:0.6}
+  .flower-stage-2 .petal{transform:scale(0.92) translateY(8px); opacity:0.85}
+  .flower-stage-3 .petal{transform:scale(1) translateY(0); opacity:1}
+
+  /* Micro-messages */
+  .micro{display:flex;flex-direction:column;gap:10px; align-items:flex-start}
+  .micro .box{background:linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); padding:12px 14px; border-radius:10px; width:100%}
+
+  /* Heart game */
+  .big-heart{display:flex;flex-direction:column;align-items:center;gap:12px;padding:28px}
+  .heart{
+    width:120px;height:120px;border-radius:24px; display:flex;align-items:center;justify-content:center; cursor:pointer;
+    background: radial-gradient(circle at 30% 25%, rgba(255,230,240,0.18), rgba(255,182,210,0.06));
+    box-shadow:0 8px 30px rgba(255,160,200,0.06); transition:transform .22s ease, box-shadow .22s ease, filter .22s;
+    filter:grayscale(.6) brightness(.8); transform:scale(1);
+  }
+  .heart[data-level="1"]{filter:grayscale(.4) brightness(.88)}
+  .heart[data-level="3"]{filter:grayscale(.15) brightness(1)}
+  .heart[data-active="true"]{transform:scale(1.08); box-shadow:0 20px 80px rgba(255,120,170,0.22); filter:none}
+  .spark{position: absolute; width:12px;height:12px;border-radius:50%; background:radial-gradient(circle,#fff,#ffd6ea); opacity:0; transform:translateY(0); pointer-events:none}
+
+  footer{position:fixed; left:0; right:0; bottom:0; display:flex; justify-content:center; padding:12px; z-index:10}
+  .download{background:linear-gradient(90deg,#ffd6ea,#fff2f8); padding:10px 14px; border-radius:12px; color:#2b1020; font-weight:700; text-decoration:none}
+
+  /* small helpers */
+  .muted{color:rgba(255,255,255,0.7); font-size:13px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+</style>
+</head>
+<body>
+  <div class="sky" aria-hidden="true"></div>
+  <div class="container">
+    <header>
+      <div class="intro-card">
+        <div class="main-star-wrap">
+          <div class="star" id="mainStar" role="button" tabindex="0" aria-pressed="false" title="Нажми, чтобы зажечь звёздочку">
+            <svg width="86" height="86" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 2l2.5 5.5L20 9l-4 3.5L17 20l-5-2.5L7 20l1-7.5L4 9l5.5-1.5L12 2z" fill="#fff"/>
+            </svg>
+          </div>
+          <div class="star-label"><strong>Любимая, это всё для тебя 💫❤️</strong></div>
+          <div class="constellation" aria-hidden="true">
+            <!-- heart-shaped constellation SVG -->
+            <svg width="360" height="220" viewBox="0 0 360 220" fill="none" style="opacity:.9">
+              <defs>
+                <radialGradient id="g1" cx="50%" cy="50%">
+                  <stop offset="0%" stop-color="#fff"/>
+                  <stop offset="60%" stop-color="#ffd6ea" stop-opacity="0.7"/>
+                </radialGradient>
+              </defs>
+              <path d="M180 60 C 150 10, 40 20, 80 120 C 110 190, 170 200, 180 210 C 190 200, 250 190, 280 120 C 320 20, 210 10, 180 60 Z" stroke="rgba(255,200,235,0.06)" stroke-width="1.8" fill="none"></path>
+              <!-- little stars laid along heart -->
+              <g id="tinyStars" fill="url(#g1)">
+                <circle cx="140" cy="50" r="3"/>
+                <circle cx="160" cy="40" r="2.6"/>
+                <circle cx="180" cy="32" r="3.2"/>
+                <circle cx="200" cy="38" r="2.4"/>
+                <circle cx="220" cy="48" r="2.8"/>
+                <circle cx="240" cy="68" r="2.4"/>
+                <circle cx="260" cy="92" r="3.2"/>
+                <circle cx="280" cy="120" r="2.6"/>
+                <circle cx="260" cy="150" r="2.8"/>
+                <circle cx="230" cy="175" r="3.2"/>
+                <circle cx="200" cy="195" r="2.6"/>
+                <circle cx="170" cy="190" r="3"/>
+                <circle cx="130" cy="160" r="2.6"/>
+                <circle cx="110" cy="120" r="2.8"/>
+                <circle cx="120" cy="80" r="3.2"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <p class="subtitle">Прокрути вниз — там ты найдёшь маленькие вещи, которые я собрал специально для тебя</p>
+      </div>
+    </header>
+
+    <main class="grid" aria-live="polite">
+      <section class="card" id="lettersCard" aria-labelledby="lettersTitle">
+        <h3 id="lettersTitle">✉ Письма, которые откроются позже</h3>
+        <p class="muted">Нажми на любую кнопку, чтобы открыть письмо</p>
+        <div style="margin-top:12px; display:flex;flex-direction:column; gap:10px">
+          <button class="btn" data-letter="1">Когда тебе тяжело</button>
+          <button class="btn" data-letter="2">Когда ты злишься на себя</button>
+          <button class="btn" data-letter="3">Когда ты не видит смысла</button>
+          <button class="btn" data-letter="4">Когда тебе нужна любовь</button>
+        </div>
+      </section>
+
+      <section class="card" id="flowerCard" aria-labelledby="flowerTitle">
+        <h3 id="flowerTitle">🌱 Цветок твоего настроения</h3>
+        <p class="muted">Выбирай состояние — цветок откроется по-новому</p>
+        <div class="flower-wrap">
+          <svg class="flower-svg flower-stage-1" id="flowerSvg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <g transform="translate(100,100)">
+              <g class="petal" id="petal1"><ellipse rx="18" ry="38" transform="rotate(0) translate(0,-48)" fill="#ffd6ea" /></g>
+              <g class="petal" id="petal2"><ellipse rx="18" ry="38" transform="rotate(50) translate(0,-48)" fill="#ffe7f2" /></g>
+              <g class="petal" id="petal3"><ellipse rx="18" ry="38" transform="rotate(100) translate(0,-48)" fill="#ffd6ea" /></g>
+              <g class="petal" id="petal4"><ellipse rx="18" ry="38" transform="rotate(150) translate(0,-48)" fill="#fff8fb" /></g>
+              <g class="petal" id="petal5"><ellipse rx="18" ry="38" transform="rotate(200) translate(0,-48)" fill="#ffe7f2" /></g>
+              <g class="petal" id="petal6"><ellipse rx="18" ry="38" transform="rotate(250) translate(0,-48)" fill="#ffd6ea" /></g>
+              <circle r="14" fill="#fff1f6" stroke="#ffd6ea" stroke-width="2"/>
+            </g>
+          </svg>
+
+          <div class="row">
+            <button class="ghost" data-stage="1">Мне тяжело</button>
+            <button class="ghost" data-stage="2">Становится чуть лучше</button>
+            <button class="ghost" data-stage="3">Появилась искра</button>
+          </div>
+          <div class="muted" id="flowerText" style="margin-top:6px; text-align:center; max-width:320px">
+            Даже самым красивым цветочкам бывает тяжело, поэтому ты можешь сейчас побыть со мной. Видимо моему цветочку нужно набраться сил и поэтому я здесь. Мы можем тянуться к свету вместе, но для начала просто побудь со мной собой и отдохни, милая моя ❤️
+          </div>
+        </div>
+      </section>
+
+      <section class="card" id="starCard" aria-labelledby="starTitle">
+        <h3 id="starTitle">⭐ Твоя звёздочка — Жаннелёк</h3>
+        <p class="muted">Нажми на звёздочку вверху чтобы увидеть маленькое послание</p>
+        <div style="margin-top:12px; display:flex;gap:10px;flex-wrap:wrap">
+          <div class="card" style="flex:1; min-width:200px;">
+            <h3 style="font-size:16px">Звёздочки-сердечки</h3>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+              <button class="ghost star-msg">Ты делаешь мой мир уютнее ❤️</button>
+              <button class="ghost star-msg">Ты — моя нежность ❤️</button>
+              <button class="ghost star-msg">С тобой теплее ❤️</button>
+              <button class="ghost star-msg">Ты — мой свет даже в темноте ❤️</button>
+              <button class="ghost star-msg">Ты самая родная для меня ❤️</button>
+              <button class="ghost star-msg">Ты делаешь меня лучше каждый день ❤️</button>
+              <button class="ghost star-msg">Ты — моё счастье, Жаннелёк ❤️</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" id="microCard" aria-labelledby="microTitle">
+        <h3 id="microTitle">🎁 Маленькие тёплые сообщения</h3>
+        <p class="muted">Нажимай, чтобы получать новое сообщение — их 31</p>
+        <div class="micro" style="margin-top:10px">
+          <div class="box" id="microBox">Ты самая добрая девочка ❤️</div>
+          <div class="row" style="margin-top:8px">
+            <button class="btn" id="nextMicro">Получить сообщение</button>
+            <button class="ghost" id="shuffleMicro">Поменять порядок</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card big-heart" id="heartCard" aria-labelledby="heartTitle">
+        <h3 id="heartTitle">💖 Маленькая игра света</h3>
+        <p class="muted">Нажми на сердце — оно станет ярче</p>
+        <div style="position:relative; width:100%; display:flex; justify-content:center; align-items:center">
+          <div class="heart" id="heart" data-level="0" title="Нажми меня">
+            <svg width="64" height="64" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M12 21s-7-4.4-9.3-7.1C-0.1 10.3 2.6 6 6.5 6c1.8 0 3.2.9 4.1 2.1C11.8 6.9 13.2 6 15 6c3.9 0 6.6 4.3 3.8 7.9C19 16.6 12 21 12 21z"/></svg>
+          </div>
+        </div>
+        <div class="muted" id="heartInfo">Сердце тусклое — нажми 10 раз, чтобы увидеть сюрприз</div>
+      </section>
+    </main>
+  </div>
+
+  <!-- letter modal -->
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="letter" role="document">
+      <button class="close" id="closeModal">✕</button>
+      <h2 id="modalTitle">Письмо</h2>
+      <p id="modalText"></p>
+    </div>
+  </div>
+
+  <footer>
+    <a class="download" id="downloadBtn" href="#" download="for_zhanneliya.html">Скачать файл сайта</a>
+  </footer>
+
+<script>
+// Data from the user (texts)
+const letters = {
+  1: `Солнышко, тебе не нужно быть сильной со мной. Просто подойди, даже мысленно — я рядом. Даже на расстоянии я всё равно всегда ближе всех к тебе и никогда не оставлю одну в беде 🥺\n\nТы можешь плакать, можешь уставать, можешь молчать и ничего не говорить — я всё равно буду здесь. Я буду обнимать тебя так крепко, как только могу ❤️\n\nИногда всё вокруг кажется тяжёлым… но ты не одна в этом. Мы вместе. Всегда ❤️`,
+  2: `Тебе не нужно быть идеальной (хотя для меня ты идеальна). Мы все люди, не роботы, и можем ошибаться. В этом нет ничего страшного, малыш 🥺\n\nЯ не вижу в тебе ошибок — я вижу прекрасную девушку, которая каждый день становится лучше и не собирается останавливаться ❤️\n\nРазреши себе быть собой. Я люблю тебя именно такой, какая ты есть.\n\nТы настоящая — а настоящая ты самая добрая, прелестная, красивая, трудолюбивая и очень заботливая девочка 🥺❤️`,
+  3: `Сейчас мир может выглядеть так, будто в нём нет места радости. Будто всё поблекло, и краски исчезают прямо на глазах… Но это временно, хорошо?\n\nКраски обязательно вернутся. И если ты пока не можешь в это верить — я поверю за нас двоих.\n\nПросто знай: твоё существование делает этот мир теплее и светлее ❤️\n\nНе нужно улыбаться или делать вид, что тебе лучше. Просто будь здесь, будь собой. Я рядом — всегда — и дам тебе тот покой, который тебе нужен. Это моя цель.\n\nТы для меня важнее всего ❤️`,
+  4: `Солнышко моё, пойдём, я тебя креееепко заобнимаю 🥹\n\nПредставь, что я рядом: ты лежишь на моей груди, а я нежно глажу тебя по голове 🥺\n\nТы моя маленькая, хрупкая кошечка. Позволь мне позаботиться о тебе и затискать тебя так сильно, как ты заслуживаешь 🥰\n\nНе забывай: мы есть друг у друга. Я отправляю тебе сотню тысяч поцелуев издалека… И очень скоро я уже буду рядом, чтобы зацеловать тебя с ног до головы 🥹❤️`
+};
+
+const flowerTexts = {
+  1: `Даже самым красивым цветочкам бывает тяжело, поэтому ты можешь сейчас побыть со мной. Видимо моему цветочку нужно набраться сил и поэтому я здесь. Мы можем тянуться к свету вместе, но для начала просто побудь со мной собой и отдохни, милая моя ❤️`,
+  2: `Малыш, ты такая умничка у меня 🥹❤️\nМаленькие шаги очень важны и я так горжусь тем, что ты двигается вперёд, снова дышит намного легче и у тебя появляется твоя прекрасная искра 🥹\nТы — моя гордость ❤️`,
+  3: `Вот оно — то, к чему мы стремились 🥺\nИскра снова здесь, ты только посмотри на это 🥹\nТеперь, когда мы достигли этого, я буду помогать тебе, будучи рядом, поддерживать эту искру и дать ей возможность продолжать разгораться мягко и спокойно 💋❤️`
+};
+
+const starMainText = `Ты — моя самая любимая звёздочка 🥹❤️`;
+const starMessages = [
+  "Ты делаешь мой мир уютнее ❤️",
+  "Ты — моя нежность ❤️",
+  "С тобой теплее ❤️",
+  "Ты — мой свет даже в темноте ❤️",
+  "Ты самая родная для меня ❤️",
+  "Ты делаешь меня лучше каждый день ❤️",
+  "Ты — моё счастье, Жаннелёк ❤️"
+];
+
+let microMessages = [
+"Ты самая добрая девочка ❤️","У тебя самое красивое сердце ❤️","Ты умеешь любить по-настоящему ❤️","Ты невероятно заботливая ❤️","С тобой так тепло и спокойно ❤️","Ты делаешь мир ярче просто существуя ❤️","Ты очень хрупкая и нежная, и это прекрасно ❤️","Ты самая трудолюбивая малышка ❤️","Ты умеешь поддерживать лучше всех ❤️","Ты самая прекрасная девочка в моей жизни ❤️","Ты умеешь чувствовать глубже, чем другие ❤️","Твоя улыбка — мой любимый свет ❤️","В тебе столько искренности ❤️","Ты вдохновляешь меня каждый день ❤️","Ты очень сильная, даже когда так не кажется ❤️","Ты умеешь любить всей душой ❤️","Твоя нежность — это волшебство ❤️","Ты такая уникальная и настоящая ❤️","Ты наполняешь меня теплом ❤️","Ты — моё самое мягкое чувство ❤️","Ты очень смелая, хоть иногда и сомневаешься ❤️","Твои объятия — мой дом ❤️","Ты такая маленькая и такая важная для меня ❤️","С тобой я становлюсь лучше ❤️","Ты невероятно искренняя ❤️","Ты приносишь свет даже в серые дни ❤️","Ты умеешь делать сердце спокойным ❤️","Ты прекраснее, чем сама думаешь ❤️","Ты особенная, единственная ❤️","Ты — чудо, которое я бережно люблю ❤️","Ты моя самая любимая девочка ❤️"
+];
+
+// modal controls
+const modal = document.getElementById('modal');
+const modalText = document.getElementById('modalText');
+const modalTitle = document.getElementById('modalTitle');
+const closeModal = document.getElementById('closeModal');
+document.querySelectorAll('[data-letter]').forEach(b => {
+  b.addEventListener('click', ()=> openLetter(b.dataset.letter));
+});
+closeModal.addEventListener('click', closeLetter);
+modal.addEventListener('click', (e)=>{ if(e.target===modal) closeLetter(); });
+
+function openLetter(id){
+  modalTitle.textContent = document.querySelector(`[data-letter="${id}"]`).textContent;
+  modalText.textContent = letters[id];
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+}
+function closeLetter(){
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+}
+
+// main star interaction
+const mainStar = document.getElementById('mainStar');
+mainStar.addEventListener('click', ()=> toggleStar());
+mainStar.addEventListener('keydown', (e)=> { if(e.key==='Enter' || e.key===' ') toggleStar(); });
+
+function toggleStar(){
+  const active = mainStar.getAttribute('data-active') === 'true';
+  mainStar.setAttribute('data-active', String(!active));
+  if(!active){
+    showTempMessage(starMainText, 3500);
+  }
+}
+
+// star small messages
+document.querySelectorAll('.star-msg').forEach(btn=>{
+  btn.addEventListener('click', ()=> showTempMessage(btn.textContent, 3000));
+});
+
+function showTempMessage(text, ms=2500){
+  const prev = document.getElementById('tempMsg');
+  if(prev){ prev.remove(); }
+  const el = document.createElement('div');
+  el.id='tempMsg';
+  el.style.position='fixed';
+  el.style.left='50%';
+  el.style.bottom='120px';
+  el.style.transform='translateX(-50%)';
+  el.style.padding='12px 18px';
+  el.style.borderRadius='12px';
+  el.style.background='linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03))';
+  el.style.boxShadow='0 8px 40px rgba(0,0,0,0.6)';
+  el.style.color='#fff';
+  el.style.zIndex=30;
+  el.style.fontWeight=600;
+  el.textContent = text;
+  document.body.appendChild(el);
+  setTimeout(()=> el.remove(), ms);
+}
+
+// flower stages
+const flowerSvg = document.getElementById('flowerSvg');
+const flowerText = document.getElementById('flowerText');
+document.querySelectorAll('[data-stage]').forEach(btn=>{
+  btn.addEventListener('click', ()=> {
+    const s = btn.dataset.stage;
+    flowerSvg.classList.remove('flower-stage-1','flower-stage-2','flower-stage-3');
+    flowerSvg.classList.add('flower-stage-'+s);
+    flowerText.textContent = flowerTexts[s];
+  });
+});
+
+// micro messages
+const microBox = document.getElementById('microBox');
+const nextMicro = document.getElementById('nextMicro');
+const shuffleMicro = document.getElementById('shuffleMicro');
+
+function pickMicro(){
+  if(microMessages.length===0){ microBox.textContent = "Я всегда с тобой ❤️"; return; }
+  const i = Math.floor(Math.random()*microMessages.length);
+  const text = microMessages.splice(i,1)[0];
+  microBox.textContent = text;
+}
+nextMicro.addEventListener('click', pickMicro);
+shuffleMicro.addEventListener('click', ()=>{
+  microMessages = microMessages.sort(()=>Math.random()-0.5);
+  showTempMessage('Порядок перемешан', 1500);
+});
+
+// heart game
+const heart = document.getElementById('heart');
+const heartInfo = document.getElementById('heartInfo');
+let heartCount = 0;
+heart.addEventListener('click', ()=>{
+  heartCount++;
+  const level = Math.min(3, Math.ceil(heartCount/4)); // 0..3
+  heart.setAttribute('data-level', String(level));
+  if(heartCount>=10){
+    heart.setAttribute('data-active','true');
+    heartInfo.textContent = 'Вот так выглядит моё сердце после появления тебя в моей жизни ☺️💋';
+    showTempMessage('Вот так выглядит моё сердце после появления тебя в моей жизни ☺️💋', 4000);
+  } else {
+    heartInfo.textContent = `Сердце тусклое — нажми ${10-heartCount} раз, чтобы увидеть сюрприз`;
+  }
+  // small spark
+  const s = document.createElement('div');
+  s.className='spark';
+  s.style.left=(50+Math.random()*80-40)+'%'; s.style.top=(40+Math.random()*40-20)+'%';
+  document.getElementById('heartCard').appendChild(s);
+  setTimeout(()=> { s.style.opacity=1; s.style.transform='translateY(-12px) scale(1.2)'; },20);
+  setTimeout(()=> s.remove(),700);
+});
+
+// download generation: create downloadable html from the current DOM content
+const downloadBtn = document.getElementById('downloadBtn');
+downloadBtn.addEventListener('click', (e)=> {
+  e.preventDefault();
+  const doc = `<!doctype html>\n${document.documentElement.outerHTML}`;
+  const blob = new Blob([doc], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  downloadBtn.href = url;
+  // allow browser to trigger download
+  setTimeout(()=> { downloadBtn.removeAttribute('href'); URL.revokeObjectURL(url); }, 60000);
+  downloadBtn.click();
+});
+
+// accessibility: close with Esc
+document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeLetter(); });
+
+</script>
+</body>
+</html>
